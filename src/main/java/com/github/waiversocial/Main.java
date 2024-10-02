@@ -10,7 +10,6 @@ public class Main {
 
     public static void main(String[] args) {
         HTTPBuilder.create()
-                .endpoint(new TestBase())
                 .listen(8080, (server) -> {
                     logger.info("Server began listening at http://localhost:{}", server.getAddress().getPort());
                 });
