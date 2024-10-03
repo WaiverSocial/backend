@@ -1,5 +1,6 @@
 package com.github.waiversocial.http;
 
+import com.github.waiversocial.Main;
 import com.google.gson.JsonObject;
 import lombok.NonNull;
 import social.nickrest.http.advanced.AdvancedRequest;
@@ -13,10 +14,19 @@ import static social.nickrest.http.data.Type.*;
 public class UserEndPoints extends AdvancedRequest {
 
     @Path(value = "/ping", type = GET)
-    public void handle(@NonNull IResponse response) {
+    public void onPing(@NonNull IResponse response) {
         response.status(200)
                 .writeHeader("Content-Type", "text/html")
                 .write("<pre>Pong!</pre>");
+    }
+
+    @Path(value = "/kill", type = GET)
+    public void onKill(@NonNull IResponse response) {
+        response.status(200)
+                .writeHeader("Content-Type", "text/html")
+                .write("<pre>Shutting down...</pre>");
+        Main.getDatabase().close();
+
     }
 
     @Path(value = "/user/register", type = POST)

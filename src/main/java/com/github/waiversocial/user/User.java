@@ -1,12 +1,14 @@
 package com.github.waiversocial.user;
 
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
+@Getter
 public class User {
 
-    @NonNull
-    private String username, password;
+    private final String username, password;
+    private final long userid;
 
 }
