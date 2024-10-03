@@ -1,8 +1,7 @@
 package social.nickrest.http.advanced;
 
-import com.sun.net.httpserver.Headers;
-import com.sun.net.httpserver.HttpExchange;
 import lombok.NonNull;
+import social.nickrest.http.HTTPBuilder;
 import social.nickrest.http.data.Type;
 import social.nickrest.http.data.annotation.advanced.BaseEndPoint;
 import social.nickrest.http.data.annotation.advanced.Path;
@@ -11,7 +10,6 @@ import social.nickrest.http.data.inter.IResponse;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public abstract class AdvancedRequest implements IRequest {
@@ -45,13 +43,21 @@ public abstract class AdvancedRequest implements IRequest {
 
     @Override
     public void handle(@NonNull IResponse response) {
+        System.out.println("advanced " + response.getPath() + " handled " + getPath());
+
+        boolean handled = false;
         for(IAdvancedCallBack callback : callbacks) {
             String fixed = fixedPath(callback.getPath());
 
             if(response.getPath().equalsIgnoreCase(fixed) && response.getHttpType() == callback.getType()) {
                 callback.handle(response);
-                return;
+                handled = true;
+                break;
             }
+        }
+
+        if(!handled) {
+            HTTPBuilder.notFound404(response.getHttpType(), response.getExchange(), response.getPath(), response.getBody());
         }
     }
 

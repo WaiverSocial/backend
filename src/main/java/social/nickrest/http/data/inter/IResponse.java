@@ -47,4 +47,13 @@ public interface IResponse {
         JsonReader reader = new JsonReader(new StringReader(getBody()));
         return JsonParser.parseReader(reader).getAsJsonObject();
     }
+
+    default boolean isValidJson() {
+        try {
+            JsonParser.parseString(getBody());
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }

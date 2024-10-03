@@ -1,5 +1,7 @@
 package social.nickrest.http;
 
+import com.github.waiversocial.Main;
+import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import social.nickrest.http.data.Type;
 import social.nickrest.http.data.inter.IRequest;
@@ -49,24 +51,25 @@ public class HTTPBuilder {
                 String requestMethod = exchange.getRequestMethod();
                 String path = exchange.getRequestURI().getPath();
 
+                boolean handled = false;
                 for (IRequest request : requests) {
-                    if(request.advanced() && path.startsWith(request.getPath())) {
+                    if(request.advanced() && advancedPathCheck(request.getPath(), path)) {
                         request.handle(new Response(Type.fromString(requestMethod), path, requestBody, exchange));
-                        return;
+                        handled = true;
+                        continue;
                     }
 
                     if (requestMethod.equalsIgnoreCase(request.getType().name()) && path.equals(request.getPath())) {
                         Response response = new Response(Type.fromString(requestMethod), path, requestBody, exchange);
                         request.handle(response);
+                        handled = true;
                     }
                 }
 
-                Response response = new Response(Type.fromString(requestBody), path, requestBody, exchange);
-                response.status(404)
-                        .writeHeader("Content-Type", "text/html")
-                        .write("<html><head><title>Error</title></head><body><pre>Cannot " + requestMethod + " " + path + "</pre></body></html>");
+                if(!handled) {
+                    notFound404(Type.fromString(requestMethod), exchange, path, requestBody);
+                }
             });
-
             server.setExecutor(null);
             server.start();
 
@@ -76,6 +79,28 @@ public class HTTPBuilder {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /** todo: fix this */
+    private boolean advancedPathCheck(String path, String pathChecking) {
+        String[] split = pathChecking.split("/");
+        String[] pathSplit = path.split("/");
+
+        int passed = 0;
+        for(int i = 0; i < split.length; i++) {
+            if(split[i].equals(pathSplit[i])) {
+                passed++;
+            }
+        }
+
+        return passed == split.length;
+    }
+
+    public static void notFound404(Type method, HttpExchange exchange, String path, String requestBody) {
+        Response response = new Response(method, path, requestBody, exchange);
+        response.status(404)
+                .writeHeader("Content-Type", "text/html")
+                .write("<html><head><title>Error</title></head><body><pre>Cannot " + method + " " + path + "</pre></body></html>");
     }
 
     public boolean duplicateCheck() {
